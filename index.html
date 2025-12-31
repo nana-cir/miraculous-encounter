@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Miracle encounter</title>
+<title>きせきとのであい</title>
 <style>
   :root{
     --bg:#eef3f6;
@@ -31,7 +31,7 @@
   }
   .topbar .tiny{ font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; }
   .pill{
-    background:rgba(255,255,255,.7);
+    background:rgba(255,255,255,.72);
     border:1px solid rgba(0,0,0,.06);
     padding:6px 10px; border-radius:999px;
     box-shadow:0 4px 10px rgba(0,0,0,.04);
@@ -41,48 +41,64 @@
   .scene{
     position:relative; height:100%;
     border-radius:var(--radius);
-    background:
-      radial-gradient(1200px 480px at 50% 80%, rgba(255,255,255,.8), rgba(255,255,255,0) 60%),
-      linear-gradient(180deg, #dcecff 0%, #eaf7ef 45%, #d9ead0 100%);
     overflow:hidden; box-shadow: var(--shadow);
     border:1px solid rgba(0,0,0,.06);
-    transition: filter .35s ease, background .35s ease;
+    background: linear-gradient(180deg, #dcecff 0%, #eaf7ef 45%, #d9ead0 100%);
   }
 
-  .scene.day{ }
-  .scene.night{
-    background:
-      radial-gradient(1200px 480px at 50% 80%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
-      linear-gradient(180deg, #bccbe6 0%, #d8eadf 45%, #c9dcc0 100%);
-    filter: saturate(.9) brightness(.95);
+  /* Camera layer to make "zoom" visually clear */
+  .cam{
+    position:absolute; inset:-8%;
+    transform: scale(1.00);
+    transition: transform .35s ease;
+    will-change: transform;
   }
+  .scene.zoom1 .cam{ transform: scale(1.00); }
+  .scene.zoom2 .cam{ transform: scale(1.10); }
+  .scene.zoom3 .cam{ transform: scale(1.22); }
 
-  /* Background objects */
-  .rock{
-    position:absolute; bottom:16%; left:12%;
-    width:130px; height:84px;
-    background:linear-gradient(180deg,#b8c0c8,#9aa3ad);
-    border-radius:28px 30px 22px 26px;
-    opacity:.9;
-  }
-  .rock:after{
-    content:""; position:absolute; right:-18px; top:18px;
-    width:68px; height:48px;
-    background:linear-gradient(180deg,#c6cdd5,#9aa3ad);
-    border-radius:22px; opacity:.85;
-  }
-  .trees{
-    position:absolute;
-    left:-10%; top:10%;
-    width:120%; height:45%;
+  .scene.day .cam{ filter: saturate(1) brightness(1); }
+  .scene.night .cam{ filter: saturate(.92) brightness(.95); }
+
+  /* Background details */
+  .skyGlow{
+    position:absolute; inset:0;
     background:
-      radial-gradient(180px 120px at 15% 65%, rgba(0,0,0,.06), rgba(0,0,0,0) 70%),
-      radial-gradient(220px 140px at 85% 58%, rgba(0,0,0,.05), rgba(0,0,0,0) 70%);
+      radial-gradient(1200px 480px at 50% 82%, rgba(255,255,255,.78), rgba(255,255,255,0) 60%);
     pointer-events:none;
   }
+  .trees{
+    position:absolute; left:-10%; top:8%;
+    width:120%; height:46%;
+    background:
+      radial-gradient(220px 150px at 18% 62%, rgba(0,0,0,.06), rgba(0,0,0,0) 70%),
+      radial-gradient(260px 160px at 85% 58%, rgba(0,0,0,.05), rgba(0,0,0,0) 70%);
+    pointer-events:none;
+  }
+  .rock{
+    position:absolute; bottom:18%; left:10%;
+    width:140px; height:90px;
+    background:linear-gradient(180deg,#b8c0c8,#9aa3ad);
+    border-radius:30px 32px 22px 28px;
+    opacity:.92;
+  }
+  .rock:after{
+    content:""; position:absolute; right:-22px; top:18px;
+    width:76px; height:54px;
+    background:linear-gradient(180deg,#c6cdd5,#9aa3ad);
+    border-radius:22px; opacity:.86;
+  }
+  .bush{
+    position:absolute; bottom:18%; right:10%;
+    width:150px; height:96px;
+    background:linear-gradient(180deg,#cfe7c4,#a8cf9f);
+    border-radius:44px 44px 34px 34px;
+    box-shadow: inset 0 -8px 0 rgba(0,0,0,.05);
+    opacity:.92;
+  }
   .grass{
-    position:absolute; bottom:-30px; left:-20px;
-    width:110%; height:36%;
+    position:absolute; bottom:-36px; left:-20px;
+    width:110%; height:38%;
     background:
       radial-gradient(900px 220px at 50% 10%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%),
       linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.04)),
@@ -91,30 +107,25 @@
     border-top-right-radius:36px;
   }
 
-  /* Animal sprite placeholder */
+  /* Animal placeholder */
   .animal{
     position:absolute;
     left:62%; top:55%;
     transform:translate(-50%,-50%) scale(1);
-    font-size:52px;
+    font-size:56px;
     filter: drop-shadow(0 10px 14px rgba(0,0,0,.12));
-    transition: transform .35s ease, left .9s ease, top .9s ease, opacity .25s ease;
+    transition: left .9s ease, top .9s ease, opacity .25s ease;
     user-select:none; pointer-events:none;
   }
 
-  /* Camera zoom simulation */
-  .scene.zoom1 .animal{ transform:translate(-50%,-50%) scale(1.05); }
-  .scene.zoom2 .animal{ transform:translate(-50%,-50%) scale(1.20); }
-  .scene.zoom3 .animal{ transform:translate(-50%,-50%) scale(1.38); }
-
-  /* One-line status */
+  /* Status line */
   .status{
     position:absolute; left:0; right:0; bottom:14px;
     display:flex; justify-content:center; pointer-events:none;
   }
   .status .msg{
     max-width:92%;
-    background:rgba(255,255,255,.78);
+    background:rgba(255,255,255,.80);
     border:1px solid rgba(0,0,0,.06);
     box-shadow:0 6px 18px rgba(0,0,0,.08);
     padding:10px 14px; border-radius:999px;
@@ -124,7 +135,7 @@
   }
   .status .msg.show{ opacity:1; transform:translateY(0); }
 
-  /* Tiny controls */
+  /* Controls */
   .controls{
     position:absolute; right:10px; bottom:78px;
     display:flex; flex-direction:column; gap:8px;
@@ -150,19 +161,6 @@
     font-size:18px; user-select:none;
   }
   .bookBtn.show{ display:grid; }
-
-  .switchBtn{
-    position:absolute; left:10px; bottom:26px;
-    height:44px; padding:0 12px;
-    border-radius:14px;
-    border:1px solid rgba(0,0,0,.06);
-    background:rgba(255,255,255,.72);
-    box-shadow:0 6px 18px rgba(0,0,0,.08);
-    display:grid; place-items:center;
-    font-size:13px; color:#234;
-    user-select:none;
-  }
-  .switchBtn:active{ transform:scale(.99); }
 
   /* Overlays */
   .overlay{
@@ -214,9 +212,7 @@
     margin:10px 0;
     background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.75));
   }
-  .cardRow.lockedCard{
-    opacity:.55;
-  }
+  .cardRow.lockedCard{ opacity:.55; }
   .sil{
     width:46px;height:46px; border-radius:14px;
     background:linear-gradient(180deg,#2b3440,#0f141a);
@@ -246,144 +242,150 @@
   <div class="topbar">
     <div class="tiny">
       <span class="pill" id="weather">🌬</span>
-      <span class="pill" id="clock">🕒 DAY</span>
+      <span class="pill" id="clock">🕒 DAY 1</span>
     </div>
     <div class="tiny">
-      <span class="pill" id="titlePill">Manul</span>
+      <span class="pill" id="encounterPill">……</span>
     </div>
   </div>
 
   <div class="sceneWrap">
     <div class="scene zoom1 day" id="scene">
-      <div class="trees"></div>
-      <div class="rock"></div>
-      <div class="grass"></div>
+      <div class="cam" id="cam">
+        <div class="skyGlow"></div>
+        <div class="trees"></div>
+        <div class="rock" id="rock"></div>
+        <div class="bush" id="bush"></div>
+        <div class="grass"></div>
 
-      <div class="animal" id="animal" aria-hidden="true">😾</div>
+        <div class="animal" id="animal" aria-hidden="true">😾</div>
 
-      <div class="status"><div class="msg" id="statusMsg"> </div></div>
+        <div class="status"><div class="msg" id="statusMsg"> </div></div>
 
-      <div class="controls" aria-label="controls">
-        <div class="iconBtn" id="zoomOut" title="距離をとる">−</div>
-        <div class="iconBtn" id="zoomIn" title="近づく">＋</div>
-      </div>
+        <div class="controls" aria-label="controls">
+          <div class="iconBtn" id="zoomOut" title="離れる">−</div>
+          <div class="iconBtn" id="zoomIn" title="近づく">＋</div>
+        </div>
 
-      <div class="bookBtn" id="bookBtn" title="図鑑">📘</div>
-      <div class="switchBtn" id="switchBtn" title="動物を切替">切替</div>
+        <div class="bookBtn" id="bookBtn" title="図鑑">📘</div>
 
-      <!-- Escape overlay -->
-      <div class="overlay" id="escapeOverlay">
-        <div class="panel">
-          <div class="panelHeader">
-            <div class="title">……</div>
-            <button class="closeBtn" id="escapeClose" aria-label="close">×</button>
-          </div>
-          <div class="panelBody">
-            <p class="bigLine" id="escapeLine">気配がしなくなった</p>
-            <p class="muted">（同じ個体ではない“次の出会い”になります）</p>
-            <button class="primary" id="restartBtn">最初からやり直す</button>
+        <!-- Escape overlay -->
+        <div class="overlay" id="escapeOverlay">
+          <div class="panel">
+            <div class="panelHeader">
+              <div class="title">……</div>
+              <button class="closeBtn" id="escapeClose" aria-label="close">×</button>
+            </div>
+            <div class="panelBody">
+              <p class="bigLine" id="escapeLine">気配がしなくなった</p>
+              <p class="muted" id="escapeHint">（次は別の出会いになるかもしれない）</p>
+              <button class="primary" id="restartBtn">最初からやり直す</button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Encyclopedia overlay -->
-      <div class="overlay" id="bookOverlay">
-        <div class="panel">
-          <div class="panelHeader">
-            <div class="title">図鑑</div>
-            <button class="closeBtn" id="bookClose" aria-label="close">×</button>
-          </div>
-          <div class="panelBody">
-            <div class="cardRow" id="cardA">
-              <div class="sil">？</div>
-              <div class="rowMain">
-                <div class="name" id="nameA">？？？</div>
-                <div class="muted" id="subA">観察で少しずつ埋まる</div>
+        <!-- Encyclopedia overlay -->
+        <div class="overlay" id="bookOverlay">
+          <div class="panel">
+            <div class="panelHeader">
+              <div class="title">図鑑</div>
+              <button class="closeBtn" id="bookClose" aria-label="close">×</button>
+            </div>
+            <div class="panelBody">
+              <div class="cardRow" id="cardManul">
+                <div class="sil">？</div>
+                <div class="rowMain">
+                  <div class="name" id="nameManul">？？？</div>
+                  <div class="muted" id="subManul">観察で少しずつ埋まる</div>
+                </div>
+                <div class="dots" id="dotsManul"></div>
               </div>
-              <div class="dots" id="dotsA"></div>
-            </div>
 
-            <div class="cardRow lockedCard" id="cardB">
-              <div class="sil">？</div>
-              <div class="rowMain">
-                <div class="name" id="nameB">？？？</div>
-                <div class="muted" id="subB">まだ出会っていない</div>
+              <div class="cardRow lockedCard" id="cardTamarin">
+                <div class="sil">？</div>
+                <div class="rowMain">
+                  <div class="name" id="nameTamarin">金色のサル…？</div>
+                  <div class="muted" id="subTamarin">まだ出会っていない</div>
+                </div>
+                <div class="dots" id="dotsTamarin"></div>
               </div>
-              <div class="dots" id="dotsB"></div>
-            </div>
 
-            <div class="entry">
-              <h4 id="e1Title">距離</h4>
-              <p id="e1Text" class="locked">（まだ分からない）</p>
-            </div>
-            <div class="entry">
-              <h4 id="e2Title">かくれ場所 / 群れ</h4>
-              <p id="e2Text" class="locked">（まだ分からない）</p>
-            </div>
-            <div class="entry">
-              <h4 id="e3Title">きっかけ</h4>
-              <p id="e3Text" class="locked">（まだ分からない）</p>
-            </div>
+              <div class="entry">
+                <h4 id="e1Title">距離</h4>
+                <p id="e1Text" class="locked">（まだ分からない）</p>
+              </div>
+              <div class="entry">
+                <h4 id="e2Title">安心</h4>
+                <p id="e2Text" class="locked">（まだ分からない）</p>
+              </div>
+              <div class="entry">
+                <h4 id="e3Title">きっかけ</h4>
+                <p id="e3Text" class="locked">（まだ分からない）</p>
+              </div>
 
-            <p class="muted" style="margin-top:10px;">
-              ※ 正解は先に教えない。体験が先に来る。
-            </p>
+              <p class="muted" style="margin-top:10px;">
+                ※ 図鑑は“後から”分かる。
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
-  </div>
-</div>
+      </div><!-- /cam -->
+    </div><!-- /scene -->
+  </div><!-- /sceneWrap -->
+</div><!-- /app -->
 
 <script>
 (() => {
-  // --- Animals config (MVP) ---
-  // Note: "name" stays ??? per Route A
+  // ----------------------------
+  // Animals
+  // ----------------------------
   const Animals = {
-    A: { // Cat (Manul-like)
-      id: "A",
-      title: "Manul",
+    manul: {
+      id: "manul",
+      knownName: "マヌルネコだ！",
+      unknownName: "？？？",
       emoji: { IDLE:"😾", OBSERVE:"👀", HIDE:"🙈", NATURAL:"😺", ESCAPE:"💨" },
       escapeLine: "マヌルネコの気配がしなくなった",
-      // Behavior tuning
-      // approach close is dangerous
-      approachStress: 14,
+      // tuning
+      approachStress: 16,
       approachAlert: 18,
-      waitUnlockDistanceStress: 35,
       naturalStressMax: 30,
       naturalAlertMax: 35,
-      // Notes for encyclopedia
+      waitUnlockDistanceStress: 35,
       text: {
         distance: "近づかれるのが苦手。見守る距離が安心につながる。",
-        cover:    "岩陰や草むらは安心材料。隠れられると行動が増える。",
+        safe:     "岩陰や草むらは安心材料。隠れられると行動が増える。",
         trigger:  "追いかける／近づきすぎると、気配が消えることがある。"
       }
     },
-    B: { // Monkey (Tamarin-like)
-      id: "B",
-      title: "Field",
+    tamarin: {
+      id: "tamarin",
+      knownName: "タマリンだ！",
+      unknownName: "金色のサル…？",
       emoji: { IDLE:"🐒", OBSERVE:"👀", HIDE:"🙈", NATURAL:"🙊", ESCAPE:"💨" },
-      escapeLine: "サルの気配がしなくなった",
-      // Behavior tuning
-      // being close isn't instantly fatal, but "neglect" increases alert
+      escapeLine: "金色のサルの気配がしなくなった",
+      // tuning (not “meaningless”: its failure trigger differs)
       approachStress: 8,
       approachAlert: 10,
-      waitUnlockDistanceStress: 45,
       naturalStressMax: 40,
       naturalAlertMax: 45,
+      waitUnlockDistanceStress: 45,
       text: {
-        distance: "距離は状況次第。近すぎるのも、放置しすぎるのも不安になる。",
-        cover:    "単独にしない。落ち着ける場所と“気配”の安定が大事。",
+        distance: "近すぎるのも、放置しすぎるのも不安につながる。",
+        safe:     "“気配”が安定すると落ち着く。急な刺激が続くと散る。",
         trigger:  "反応が続くと群れが散り、気配が消えることがある。"
       }
     }
   };
 
-  // --- Global state (knowledge persists across restarts) ---
+  // ----------------------------
+  // Global (knowledge persists)
+  // ----------------------------
   const S = {
-    animalKey: "A",  // current animal (A/B)
-    zoom: 1,         // 1..3
+    // session
+    current: "manul",
+    zoom: 1,
     stress: 15,
     alert: 10,
     mode: "IDLE",
@@ -391,53 +393,67 @@
     tapBurst: 0,
     tapBurstTimer: null,
     seenNatural: 0,
-    day: true,
 
-    // Knowledge progression
-    escapedOnce: { A:false, B:false },
-    metOnce:     { A:true,  B:false },  // start with A "met"
+    // day/achievement
+    day: 1,
+    isNight: false,
+    milestones: { d3:false, d7:false },
+
+    // knowledge
+    known: { manul: true, tamarin: false }, // after “condition clear” we show known name
+    met:   { manul: true, tamarin: false }, // encountered at least once
+    escapedOnce: { manul: false, tamarin: false },
     unlock: {
-      A: { distance:false, cover:false, trigger:false },
-      B: { distance:false, cover:false, trigger:false }
+      manul: { distance:false, safe:false, trigger:false },
+      tamarin:{ distance:false, safe:false, trigger:false }
     }
   };
 
-  // --- DOM ---
+  // ----------------------------
+  // DOM
+  // ----------------------------
   const scene = document.getElementById("scene");
   const animal = document.getElementById("animal");
   const statusMsg = document.getElementById("statusMsg");
   const zoomIn = document.getElementById("zoomIn");
   const zoomOut = document.getElementById("zoomOut");
   const bookBtn = document.getElementById("bookBtn");
-  const switchBtn = document.getElementById("switchBtn");
-  const titlePill = document.getElementById("titlePill");
+  const encounterPill = document.getElementById("encounterPill");
 
-  const escapeOverlay = document.getElementById("escapeOverlay");
-  const restartBtn = document.getElementById("restartBtn");
-  const escapeClose = document.getElementById("escapeClose");
-  const escapeLine = document.getElementById("escapeLine");
-
-  const bookOverlay = document.getElementById("bookOverlay");
-  const bookClose = document.getElementById("bookClose");
+  const rock = document.getElementById("rock");
+  const bush = document.getElementById("bush");
 
   const weather = document.getElementById("weather");
   const clock = document.getElementById("clock");
 
-  const cardA = document.getElementById("cardA");
-  const cardB = document.getElementById("cardB");
-  const nameA = document.getElementById("nameA");
-  const nameB = document.getElementById("nameB");
-  const subA  = document.getElementById("subA");
-  const subB  = document.getElementById("subB");
-  const dotsA = document.getElementById("dotsA");
-  const dotsB = document.getElementById("dotsB");
+  const escapeOverlay = document.getElementById("escapeOverlay");
+  const escapeLine = document.getElementById("escapeLine");
+  const escapeHint = document.getElementById("escapeHint");
+  const restartBtn = document.getElementById("restartBtn");
+  const escapeClose = document.getElementById("escapeClose");
+
+  const bookOverlay = document.getElementById("bookOverlay");
+  const bookClose = document.getElementById("bookClose");
+
+  const cardManul = document.getElementById("cardManul");
+  const cardTamarin = document.getElementById("cardTamarin");
+  const nameManul = document.getElementById("nameManul");
+  const nameTamarin = document.getElementById("nameTamarin");
+  const subManul = document.getElementById("subManul");
+  const subTamarin = document.getElementById("subTamarin");
+  const dotsManul = document.getElementById("dotsManul");
+  const dotsTamarin = document.getElementById("dotsTamarin");
 
   const e1Text = document.getElementById("e1Text");
   const e2Text = document.getElementById("e2Text");
   const e3Text = document.getElementById("e3Text");
 
-  // --- Helpers ---
+  // ----------------------------
+  // Helpers
+  // ----------------------------
   const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+  const nowMs = () => Date.now();
+  const cur = () => Animals[S.current];
 
   let msgTimer=null;
   function flashMsg(text, ms=1400){
@@ -447,70 +463,130 @@
     msgTimer = setTimeout(()=>statusMsg.classList.remove("show"), ms);
   }
 
-  function currentAnimal(){ return Animals[S.animalKey]; }
-
   function setZoom(z){
-    S.zoom = clamp(z,1,3);
+    S.zoom = clamp(z, 1, 3);
     scene.classList.toggle("zoom1", S.zoom===1);
     scene.classList.toggle("zoom2", S.zoom===2);
     scene.classList.toggle("zoom3", S.zoom===3);
+
+    // Visual hint
+    if(S.zoom===1) flashMsg("離れて見守る", 900);
+    if(S.zoom===3) flashMsg("近すぎるかも", 900);
+  }
+
+  function setDayNight(isNight){
+    S.isNight = isNight;
+    scene.classList.toggle("night", isNight);
+    scene.classList.toggle("day", !isNight);
+    weather.textContent = isNight ? "🌙" : "🌬";
+    clock.textContent = `🕒 DAY ${S.day}`;
+  }
+
+  function maybeAdvanceDay(){
+    // Slow day progression (for MVP)
+    // Every ~40s of real time => +1 day
+    // (You can tune later)
+    if(!S._dayStartAt) S._dayStartAt = nowMs();
+    const elapsed = (nowMs() - S._dayStartAt)/1000;
+    if(elapsed > 40){
+      S.day += 1;
+      S._dayStartAt = nowMs();
+      flashMsg(`DAY ${S.day}`, 1200);
+      // Achievements
+      if(S.day >= 3 && !S.milestones.d3){
+        S.milestones.d3 = true;
+        flashMsg("実績：3日見守った", 1500);
+      }
+      if(S.day >= 7 && !S.milestones.d7){
+        S.milestones.d7 = true;
+        flashMsg("実績：7日見守った", 1500);
+      }
+    }
+    clock.textContent = `🕒 DAY ${S.day}`;
+  }
+
+  function setSpriteByMode(){
+    animal.textContent = cur().emoji[S.mode] || "？";
   }
 
   function randomMove(){
+    // Keep away from dead center
     const x = clamp(55 + (Math.random()*30 - 15), 18, 82);
-    const y = clamp(52 + (Math.random()*26 - 13), 22, 78);
+    const y = clamp(54 + (Math.random()*26 - 13), 24, 80);
     animal.style.left = x + "%";
     animal.style.top  = y + "%";
   }
 
-  function setSpriteByMode(){
-    const A = currentAnimal();
-    animal.textContent = A.emoji[S.mode] || "？";
+  function distPercentTo(el){
+    // Approx distance from animal center to element center (0..100)
+    const a = animal.getBoundingClientRect();
+    const b = el.getBoundingClientRect();
+    const ax = a.left + a.width/2;
+    const ay = a.top  + a.height/2;
+    const bx = b.left + b.width/2;
+    const by = b.top  + b.height/2;
+    const dx = ax - bx;
+    const dy = ay - by;
+    const d  = Math.sqrt(dx*dx + dy*dy);
+    // normalize by viewport diagonal
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const diag = Math.sqrt(vw*vw + vh*vh);
+    return clamp((d/diag)*100, 0, 100);
   }
 
-  function registerAction(){
-    S.lastActionAt = Date.now();
+  function hideHint(){
+    // If close to rock => rock hint; else bush hint
+    const dr = distPercentTo(rock);
+    const db = distPercentTo(bush);
+    if(dr < 18) return "いわかげにかくれた";
+    if(db < 18) return "しげみにいるかも";
+    return "どこかにいる";
+  }
+
+  function showEncounterName(){
+    const a = cur();
+    // Known/unknown naming logic
+    if(S.known[S.current]) encounterPill.textContent = a.knownName;
+    else encounterPill.textContent = a.unknownName;
   }
 
   function showBookIfAnyEscape(){
-    if(S.escapedOnce.A || S.escapedOnce.B){
+    if(S.escapedOnce.manul || S.escapedOnce.tamarin){
       bookBtn.classList.add("show");
     }
   }
 
-  // --- Encyclopedia ---
-  function dotCount(key){
-    const u = S.unlock[key];
-    return (u.distance?1:0) + (u.cover?1:0) + (u.trigger?1:0);
+  // ----------------------------
+  // Encyclopedia
+  // ----------------------------
+  function dotCount(id){
+    const u = S.unlock[id];
+    return (u.distance?1:0) + (u.safe?1:0) + (u.trigger?1:0);
   }
-  function renderDots(el, key){
-    el.innerHTML="";
-    const c = dotCount(key);
+  function renderDots(el, id){
+    el.innerHTML = "";
+    const c = dotCount(id);
     for(let i=0;i<3;i++){
-      const d=document.createElement("div");
-      d.className="dot"+(i<c?" on":"");
+      const d = document.createElement("div");
+      d.className = "dot" + (i < c ? " on":"");
       el.appendChild(d);
     }
   }
+  function renderEncyclopedia(focusId = S.current){
+    // Names (Route A)
+    nameManul.textContent = S.known.manul ? "マヌルネコ" : "？？？";
+    nameTamarin.textContent = S.known.tamarin ? "タマリン" : "金色のサル…？";
 
-  function renderEncyclopedia(){
-    // Route A: keep unknown
-    nameA.textContent = "？？？";
-    nameB.textContent = "？？？";
+    subManul.textContent = "観察で少しずつ埋まる";
+    subTamarin.textContent = S.met.tamarin ? "観察で少しずつ埋まる" : "まだ出会っていない";
 
-    subA.textContent = "観察で少しずつ埋まる";
-    subB.textContent = S.metOnce.B ? "観察で少しずつ埋まる" : "まだ出会っていない";
+    cardTamarin.classList.toggle("lockedCard", !S.met.tamarin);
 
-    renderDots(dotsA, "A");
-    renderDots(dotsB, "B");
+    renderDots(dotsManul, "manul");
+    renderDots(dotsTamarin, "tamarin");
 
-    // Card lock visuals
-    cardB.classList.toggle("lockedCard", !S.metOnce.B);
-
-    // Show entries for currently selected animal
-    const key = S.animalKey;
-    const unlocked = S.unlock[key];
-    const txt = Animals[key].text;
+    const unlocked = S.unlock[focusId];
+    const txt = Animals[focusId].text;
 
     if(unlocked.distance){
       e1Text.classList.remove("locked");
@@ -520,9 +596,9 @@
       e1Text.textContent = "（まだ分からない）";
     }
 
-    if(unlocked.cover){
+    if(unlocked.safe){
       e2Text.classList.remove("locked");
-      e2Text.textContent = txt.cover;
+      e2Text.textContent = txt.safe;
     }else{
       e2Text.classList.add("locked");
       e2Text.textContent = "（まだ分からない）";
@@ -537,157 +613,106 @@
     }
   }
 
-  // Click cards to change encyclopedia focus (doesn't change current field animal)
-  cardA.addEventListener("click", () => { S.animalKey = "A"; renderEncyclopedia(); });
-  cardB.addEventListener("click", () => {
-    if(!S.metOnce.B) return;
-    S.animalKey = "B";
-    renderEncyclopedia();
-  });
+  cardManul.addEventListener("click", () => renderEncyclopedia("manul"));
+  cardTamarin.addEventListener("click", () => { if(S.met.tamarin) renderEncyclopedia("tamarin"); });
 
-  // --- AI tick ---
-  function tick(){
-    const now = Date.now();
-    const noActionSec = (now - S.lastActionAt)/1000;
-    const A = currentAnimal();
-
-    // passive calm / (for monkey, too much idling increases alert after a while)
-    if(S.mode !== "ESCAPE"){
-      if(noActionSec > 18){
-        // calm down
-        S.stress = clamp(S.stress - 8, 0, 100);
-        S.alert  = clamp(S.alert  - 10, 0, 100);
-
-        // Monkey-like: long neglect => uneasy (subtle)
-        if(S.animalKey==="B" && noActionSec > 35){
-          S.alert = clamp(S.alert + 10, 0, 100);
-          if(Math.random() < 0.02) flashMsg("落ち着かない");
-        }
-
-        // unlock "distance" by learning to wait (both animals)
-        if(!S.unlock[S.animalKey].distance && S.stress < A.waitUnlockDistanceStress){
-          S.unlock[S.animalKey].distance = true;
-          flashMsg("落ち着いている");
-        }
-
-        // unlock "cover/group" after some time in stable state
-        if(!S.unlock[S.animalKey].cover && noActionSec > 24){
-          S.unlock[S.animalKey].cover = true;
-        }
-      }
-
-      // Determine mode from thresholds
-      if(S.alert > 60){
-        S.mode = "HIDE";
-      } else if(S.stress < A.naturalStressMax && S.alert < A.naturalAlertMax && noActionSec > 10){
-        S.mode = "NATURAL";
-      } else if(S.alert > 30){
-        S.mode = "OBSERVE";
-      } else {
-        S.mode = "IDLE";
-      }
-
-      // Natural behavior
-      if(S.mode === "NATURAL"){
-        S.seenNatural += 0.02;
-        if(S.seenNatural > 1.2){
-          if(Math.random() < 0.02) flashMsg("自然な行動が増えている");
-          randomMove();
-          S.seenNatural = 0;
-        }
-      }
-
-      // Hide
-      if(S.mode === "HIDE" && Math.random() < 0.01){
-        animal.style.left = "20%";
-        animal.style.top  = "68%";
-        flashMsg("警戒している");
-      }
+  // ----------------------------
+  // Encounter system (NO manual switch)
+  // ----------------------------
+  function pickNextAnimal(){
+    // Default is manul; after some progress, tamarin may appear.
+    // If tamarin not met, 30% chance after restart; once met, 50/50.
+    if(!S.met.tamarin){
+      return (Math.random() < 0.30) ? "tamarin" : "manul";
     }
-
-    // Day/night cosmetics
-    if(Math.random() < 0.002){
-      S.day = !S.day;
-      clock.textContent = S.day ? "🕒 DAY" : "🕒 NIGHT";
-      weather.textContent = S.day ? "🌬" : "🌙";
-      scene.classList.toggle("night", !S.day);
-      scene.classList.toggle("day", S.day);
-      if(!S.day) S.alert = clamp(S.alert + 8, 0, 100);
-    }
-
-    setSpriteByMode();
-    showBookIfAnyEscape();
-    requestAnimationFrame(tick);
+    return (Math.random() < 0.50) ? "tamarin" : "manul";
   }
 
-  // --- Actions ---
+  function registerAction(){
+    S.lastActionAt = nowMs();
+  }
+
   function doEscape(){
-    const A = currentAnimal();
     S.mode = "ESCAPE";
 
-    // unlock: trigger (after escape)
-    S.unlock[S.animalKey].trigger = true;
-    S.escapedOnce[S.animalKey] = true;
+    // knowledge unlock: trigger on escape
+    S.unlock[S.current].trigger = true;
+    S.escapedOnce[S.current] = true;
 
-    // If escaped while B (monkey), mark as "met once"
-    if(S.animalKey === "B") S.metOnce.B = true;
-
+    // vanish & show hint
     animal.style.opacity = "0";
     setSpriteByMode();
 
     setTimeout(() => {
-      escapeLine.textContent = A.escapeLine;
+      escapeLine.textContent = cur().escapeLine;
+      escapeHint.textContent = `（${hideHint()}）`;
       escapeOverlay.classList.add("show");
-      bookBtn.classList.add("show");
+      showBookIfAnyEscape();
       renderEncyclopedia();
     }, 420);
   }
 
   function restart(){
+    // Choose encounter (random)
+    const next = pickNextAnimal();
+    S.current = next;
+    S.met[next] = true;
+
+    // If player “clears condition”, mark known (simple MVP rule)
+    // Rule: if you observed NATURAL at least once AND haven't escaped within the last 20s -> known
+    if(S._clearedThisRun){
+      S.known[next] = true;
+    }
+    S._clearedThisRun = false;
+
+    // Reset session params
     escapeOverlay.classList.remove("show");
     animal.style.opacity = "1";
 
     S.zoom = 1;
-    S.stress = (S.animalKey==="A") ? 15 : 20;
-    S.alert  = (S.animalKey==="A") ? 10 : 14;
+    S.stress = (next==="manul") ? 15 : 20;
+    S.alert  = (next==="manul") ? 10 : 14;
     S.mode   = "IDLE";
     S.tapBurst = 0;
     S.seenNatural = 0;
-    S.lastActionAt = Date.now();
+    S.lastActionAt = nowMs();
 
     setZoom(1);
     randomMove();
-    flashMsg("……");
+    showEncounterName();
     setSpriteByMode();
     showBookIfAnyEscape();
-    renderEncyclopedia();
+
+    // Small intro message
+    if(S.known[next]){
+      flashMsg(cur().knownName, 1400);
+    }else{
+      flashMsg(cur().unknownName, 1400);
+    }
   }
 
   function approach(){
     if(S.mode==="ESCAPE") return;
-    const A = currentAnimal();
     registerAction();
 
     setZoom(S.zoom + 1);
 
-    S.stress = clamp(S.stress + A.approachStress, 0, 100);
-    S.alert  = clamp(S.alert  + A.approachAlert, 0, 100);
-    flashMsg("気づいた");
+    // close => risk
+    S.stress = clamp(S.stress + cur().approachStress, 0, 100);
+    S.alert  = clamp(S.alert  + cur().approachAlert, 0, 100);
 
-    // tap burst = chasing/petting impulse
+    // Tap burst means chasing / “touching”
     S.tapBurst++;
     clearTimeout(S.tapBurstTimer);
     S.tapBurstTimer = setTimeout(()=>S.tapBurst=0, 900);
 
-    // Escape logic differs:
-    if(S.animalKey==="A"){
-      // Cat: close + repeated taps quickly becomes fatal
+    // Fail conditions differ per animal
+    if(S.current==="manul"){
       if(S.tapBurst >= 3 && S.zoom >= 2) S.stress = clamp(S.stress + 26, 0, 100);
       if(S.stress > 80 || (S.tapBurst >= 4 && S.zoom >= 2)) doEscape();
-    } else {
-      // Monkey: not instantly fatal by closeness, but noisy interaction piles up
+    }else{
+      // tamarin: “reaction continues” => group scatters
       if(S.tapBurst >= 5 && S.zoom >= 2) S.alert = clamp(S.alert + 25, 0, 100);
-      // also: if already uneasy, repeated interaction pushes escape
       if(S.alert > 80) doEscape();
     }
   }
@@ -698,51 +723,111 @@
     setZoom(S.zoom - 1);
     S.stress = clamp(S.stress - 8, 0, 100);
     S.alert  = clamp(S.alert  - 8, 0, 100);
-    flashMsg("距離をとった");
   }
 
-  function switchAnimal(){
-    // Only allow switching when not in overlays
-    if(escapeOverlay.classList.contains("show") || bookOverlay.classList.contains("show")) return;
+  // ----------------------------
+  // AI tick
+  // ----------------------------
+  function tick(){
+    const noActionSec = (nowMs() - S.lastActionAt)/1000;
 
-    // If switching to B first time, mark "met" when you actually switch
-    const next = (S.animalKey==="A") ? "B" : "A";
-    S.animalKey = next;
-    if(next==="B") S.metOnce.B = true;
+    if(S.mode !== "ESCAPE"){
+      // Calm down if waiting
+      if(noActionSec > 18){
+        S.stress = clamp(S.stress - 8, 0, 100);
+        S.alert  = clamp(S.alert  - 10, 0, 100);
 
-    // reset momentary state but keep knowledge
-    S.zoom = 1;
-    S.stress = (next==="A") ? 15 : 20;
-    S.alert  = (next==="A") ? 10 : 14;
-    S.mode   = "IDLE";
-    S.tapBurst = 0;
-    S.seenNatural = 0;
-    S.lastActionAt = Date.now();
+        // tamarin: too long neglect => uneasy
+        if(S.current==="tamarin" && noActionSec > 35){
+          S.alert = clamp(S.alert + 10, 0, 100);
+          if(Math.random() < 0.02) flashMsg("落ち着かない");
+        }
 
-    titlePill.textContent = (next==="A") ? "Manul" : "Field";
-    setZoom(1);
-    animal.style.opacity="1";
-    randomMove();
-    flashMsg("……");
+        // unlock distance by learning to wait
+        if(!S.unlock[S.current].distance && S.stress < cur().waitUnlockDistanceStress){
+          S.unlock[S.current].distance = true;
+          flashMsg("落ち着いている");
+        }
+
+        // unlock safe/group
+        if(!S.unlock[S.current].safe && noActionSec > 24){
+          S.unlock[S.current].safe = true;
+        }
+      }
+
+      // Determine mode
+      if(S.alert > 60){
+        S.mode = "HIDE";
+      } else if(S.stress < cur().naturalStressMax && S.alert < cur().naturalAlertMax && noActionSec > 10){
+        S.mode = "NATURAL";
+      } else if(S.alert > 30){
+        S.mode = "OBSERVE";
+      } else {
+        S.mode = "IDLE";
+      }
+
+      // Natural behavior: move + “condition clear” for known reveal
+      if(S.mode === "NATURAL"){
+        S.seenNatural += 0.02;
+        if(S.seenNatural > 0.8){
+          // Mark this run as “cleared”
+          S._clearedThisRun = true;
+
+          // Make it feel alive
+          if(Math.random() < 0.35){
+            randomMove();
+          }
+          if(Math.random() < 0.10){
+            flashMsg("自然な行動が増えている");
+          }
+          S.seenNatural = 0;
+        }
+      }
+
+      // Hide behavior: move into rock/bush sometimes + message
+      if(S.mode === "HIDE" && Math.random() < 0.02){
+        const goRock = Math.random() < 0.5;
+        if(goRock){
+          animal.style.left = "18%";
+          animal.style.top  = "64%";
+          flashMsg("いわかげにかくれた", 1200);
+        }else{
+          animal.style.left = "82%";
+          animal.style.top  = "64%";
+          flashMsg("しげみにいるかも", 1200);
+        }
+      }
+    }
+
+    // Cosmetic day/night toggle occasionally
+    if(Math.random() < 0.0018){
+      setDayNight(!S.isNight);
+      if(S.isNight) S.alert = clamp(S.alert + 8, 0, 100);
+    }
+
+    // Day counter / achievements
+    maybeAdvanceDay();
+
     setSpriteByMode();
+    showBookIfAnyEscape();
+
+    requestAnimationFrame(tick);
   }
 
-  // --- Events ---
+  // ----------------------------
+  // Events
+  // ----------------------------
   scene.addEventListener("pointerdown", (e) => {
     if(escapeOverlay.classList.contains("show")) return;
     if(bookOverlay.classList.contains("show")) return;
 
     const t = e.target;
-    if(t===zoomIn || t===zoomOut || t===bookBtn || t===switchBtn) return;
-
-    // tap anywhere to "approach" (tempting trap)
+    if(t === zoomIn || t === zoomOut || t === bookBtn) return;
     approach();
   }, {passive:true});
 
   zoomIn.addEventListener("click", (e)=>{ e.stopPropagation(); approach(); });
   zoomOut.addEventListener("click",(e)=>{ e.stopPropagation(); stepBack(); });
-
-  switchBtn.addEventListener("click",(e)=>{ e.stopPropagation(); switchAnimal(); });
 
   restartBtn.addEventListener("click", restart);
   escapeClose.addEventListener("click", ()=> escapeOverlay.classList.remove("show"));
@@ -754,21 +839,18 @@
   });
   bookClose.addEventListener("click",()=> bookOverlay.classList.remove("show"));
 
-  scene.addEventListener("wheel", (e) => {
-    if(escapeOverlay.classList.contains("show") || bookOverlay.classList.contains("show")) return;
-    e.preventDefault();
-    if(e.deltaY < 0) approach();
-    else stepBack();
-  }, {passive:false});
-
+  // ----------------------------
   // Init
+  // ----------------------------
+  setDayNight(false);
   setZoom(1);
   randomMove();
-  titlePill.textContent = "Manul";
-  renderEncyclopedia();
-  showBookIfAnyEscape();
-  flashMsg("（タップ＝近づく / 左下「切替」）", 1700);
+  showEncounterName();
   setSpriteByMode();
+  renderEncyclopedia();
+
+  // Start with manul but unknown reveal works later
+  flashMsg("（タップ＝近づく / −で離れる）", 1700);
 
   requestAnimationFrame(tick);
 })();
