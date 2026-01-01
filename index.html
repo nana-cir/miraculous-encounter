@@ -14,34 +14,44 @@
             touch-action: manipulation; 
         }
         
-        /* 画面レイアウト（ここを修正！） */
         #game-screen { 
             display: flex; 
             flex-direction: column; 
-            /* 古いブラウザ向けのフォールバック */
             height: 100vh; 
-            /* スマホのアドレスバーなどを考慮した動的な高さ */
             height: 100dvh; 
         }
         
         /* 上部情報バー */
         #status-bar { background: #ffd700; padding: 10px; text-align: center; font-weight: bold; font-size: 1.2rem; display: flex; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;}
         
-        /* メイン画面（風景） */
+        /* メイン画面 */
         #scene { flex: 1; position: relative; background: linear-gradient(#87ceeb, #90ee90); transition: background 1s; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         #scene.night { background: linear-gradient(#191970, #483d8b); }
         
-        /* 動物の表示 */
+        /* 動物 */
         #animal { 
             width: 150px; height: 150px; 
-            background-color: rgba(204,204,204,0.8); border-radius: 50%; 
+            background-color: rgba(255,255,255,0.9); border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; 
             font-size: 5rem; 
             transition: all 0.5s ease;
             position: relative;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border: 3px solid #fff;
         }
         .hidden { opacity: 0; pointer-events: none; }
+        
+        /* ハートのエフェクト */
+        .heart-anim {
+            position: absolute;
+            top: -50px;
+            font-size: 3rem;
+            animation: floatUp 1s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
 
         /* 隠れ場所 */
         #hiding-spot {
@@ -61,27 +71,35 @@
         /* 操作パネル */
         #controls { 
             background: #f9f9f9; padding: 15px 10px; 
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; 
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; 
             border-top: 1px solid #eee; 
-            /* iPhone X以降の下部バー対策 */
             padding-bottom: env(safe-area-inset-bottom, 15px);
         }
         button { 
-            padding: 12px 5px; font-size: 1rem; border: 2px solid #ccc; border-radius: 12px; background: #fff; cursor: pointer; 
+            padding: 10px 2px; font-size: 0.95rem; border: 2px solid #ccc; border-radius: 12px; background: #fff; cursor: pointer; 
             font-family: inherit; font-weight: bold; color: #555;
             box-shadow: 0 3px 0 #ccc; transition: all 0.1s;
         }
         button:active { transform: translateY(3px); box-shadow: none; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: translateY(3px); }
+
         .action-btn { background: #fffbe6; border-color: #ebd8a0; box-shadow: 0 3px 0 #ebd8a0; color: #7f6a3e; }
         .move-btn { background: #e6ffff; border-color: #a0ebeb; box-shadow: 0 3px 0 #a0ebeb; color: #3e7f7f; }
         .danger-btn { background: #ffe6e6; border-color: #eba0a0; box-shadow: 0 3px 0 #eba0a0; color: #7f3e3e; }
+        
+        /* 特別なエサボタン */
+        .food-btn { 
+            background: #ffb6c1; border-color: #ff69b4; box-shadow: 0 3px 0 #ff69b4; color: #c71585; 
+            grid-column: 2 / 3; /* 中央に配置 */
+            display: none; /* 最初は非表示 */
+        }
 
-        /* スタート画面・オーバーレイ */
+        /* オーバーレイ共通 */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         .hidden-screen { display: none; }
         h1 { margin-bottom: 30px; font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .area-btn { margin: 10px; padding: 15px 40px; font-size: 1.3rem; background: orange; border: none; border-radius: 30px; color: white; box-shadow: 0 5px 0 #cc8400; }
-        .area-btn:active { transform: translateY(5px); box-shadow: none; }
+        .area-btn { margin: 10px; padding: 15px 40px; font-size: 1.3rem; background: orange; border: none; border-radius: 30px; color: white; box-shadow: 0 5px 0 #cc8400; width: 80%; max-width: 300px; }
+        .link-btn { background: #0091ca; box-shadow: 0 5px 0 #005f85; font-size: 1rem; padding: 12px; margin-top: 20px;}
     </style>
 </head>
 <body>
@@ -96,6 +114,7 @@
     <div id="result-screen" class="overlay hidden-screen">
         <h1 id="result-title">なかよくなれた！</h1>
         <div id="result-content" style="text-align:center; padding: 20px; background:rgba(255,255,255,0.2); border-radius: 20px; margin-bottom: 20px;"></div>
+        <button class="area-btn link-btn" onclick="openWWF()">🌏 くわしく しらべる (WWF)</button>
         <button class="area-btn" onclick="location.reload()">もういちど あそぶ</button>
     </div>
     
@@ -103,7 +122,6 @@
         <h1>ざんねん…</h1>
         <div style="font-size: 5rem; margin: 20px;">💢</div>
         <p>どうぶつ は おこって<br>どこかへ いってしまった。</p>
-        <p style="font-size: 0.9rem; margin-top: 20px; color:#ffaaaa;">（いじわるを すると なかよく なれないよ）</p>
         <button class="area-btn" style="background:#d9534f; margin-top:30px;" onclick="location.reload()">タイトルへ もどる</button>
     </div>
 
@@ -126,35 +144,41 @@
 
         <div id="controls">
             <button class="move-btn" onclick="changeDistance(-10)">▲ ちかづく</button>
-            <button class="action-btn" onclick="doAction('hand')">🖐️ なでる</button>
-            <button class="danger-btn" onclick="doAction('stone')">🪨 いし</button>
+            <button class="action-btn" id="btn-pet" onclick="doAction('hand')">🖐️ なでる</button>
+            <button class="danger-btn" id="btn-stone" onclick="doAction('stone')">🪨 いし</button>
             
             <button class="move-btn" onclick="changeDistance(10)">▼ はなれる</button>
             <button class="action-btn" onclick="doAction('branch')">🌿 きのえだ</button>
             <button class="action-btn" style="background:#f0f0ff; border-color:#a0a0eb; color:#5a5a9f;" onclick="checkEncyclopedia()">📖 ずかん</button>
+
+            <div style="grid-column: 1 / 4; display:flex; justify-content:center;">
+                <button id="btn-food" class="food-btn" style="width:100%; max-width:200px;" onclick="doAction('food')">🍖 ごほうびのエサ をあげる</button>
+            </div>
         </div>
     </div>
 
 <script>
-    // --- ゲーム設定データ ---
+    // --- データ ---
     const animals = {
         'sougen': {
             id: 'manuru',
             name: 'マヌルネコ',
             unknownName: 'ねこ っぽい ぞ！',
             emoji: '🐱',
-            waryDist: 35, // 少し難易度調整
+            foodName: '🥩 おにく',
+            waryDist: 35,
             hidingPlace: '🌿 くさむら',
-            desc: 'ずんぐり むっくり している ねこ。寒い ところが すき。岩のすきまに隠れるのがうまい。'
+            desc: 'ずんぐり むっくり している ねこ。寒い ところが すき。'
         },
         'jungle': {
             id: 'okapi',
             name: 'オカピ',
             unknownName: 'うま っぽい ぞ！',
             emoji: '🦓',
+            foodName: '🥬 はっぱ',
             waryDist: 45,
             hidingPlace: '🌳 しげみ',
-            desc: 'あし の しまもよう が おしゃれ。キリン の なかま で 森の奥に住んでいるよ。'
+            desc: 'あし の しまもよう が おしゃれ。キリン の なかま。'
         }
     };
 
@@ -165,27 +189,39 @@
     let timeCount = 0;
     let isNight = false;
     let isHiding = false;
-    let trust = 0;
     let gameActive = false;
     let timerInterval = null;
     let angryMode = false;
+    let isUnlocked = false; // クリア済みか
+    let isFed = false; // 今回エサをあげたか
 
     function startGame(area) {
         currentArea = area;
         targetAnimal = animals[area];
         
-        const isUnlocked = localStorage.getItem('unlocked_' + targetAnimal.id);
+        // クリア済みチェック
+        isUnlocked = localStorage.getItem('unlocked_' + targetAnimal.id) === 'true';
         
         document.getElementById('start-screen').style.display = 'none';
+        
+        // 正体表示設定
         document.getElementById('animal').innerText = isUnlocked ? targetAnimal.emoji : "❓";
-        // 隠れ場所の名前をセット
         document.getElementById('hiding-spot').innerText = targetAnimal.hidingPlace;
         
-        const initialMsg = isUnlocked ? 
-            `あっ！ ${targetAnimal.name} だ！` : 
-            `${targetAnimal.unknownName} (正体不明)`;
-        
-        showMessage(initialMsg);
+        // ボタン制御
+        if (isUnlocked) {
+            // クリア済みならエサボタンを表示
+            const foodBtn = document.getElementById('btn-food');
+            foodBtn.style.display = 'block';
+            foodBtn.innerText = targetAnimal.foodName + " をあげる";
+            
+            // 石ボタンは隠す（友達なので）
+            document.getElementById('btn-stone').style.visibility = 'hidden';
+            
+            showMessage(`あっ！ ${targetAnimal.name} だ！<br>また 会えたね！`);
+        } else {
+            showMessage(`${targetAnimal.unknownName} (正体不明)<br>そっと 見守ろう。`);
+        }
 
         gameActive = true;
         distance = 50;
@@ -203,7 +239,7 @@
             isNight = true;
             document.getElementById('scene').classList.add('night');
             document.getElementById('time-icon').innerText = '🌙';
-            showMessage("よる に なった… 周りが見えづらいね。");
+            showMessage("よる に なった…");
         } else if (timeCount === 20) {
             isNight = false;
             document.getElementById('scene').classList.remove('night');
@@ -211,13 +247,14 @@
             days++;
             timeCount = 0;
             document.getElementById('day-display').innerText = days + "にちめ";
-            showMessage("あさ に なった！ 今日も元気かな？");
+            showMessage("あさ に なった！");
             
             if (days > 3 && !angryMode) {
                 gameClear();
             }
         }
 
+        // 隠れている時の処理
         if (isHiding && distance > targetAnimal.waryDist + 10 && !angryMode) {
             isHiding = false;
             drawScene();
@@ -230,10 +267,10 @@
         distance += delta;
         if (distance < 0) distance = 0;
         if (distance > 100) distance = 100;
-        
         updateDisplay();
 
-        if (distance < targetAnimal.waryDist && !isHiding) {
+        // 警戒判定（エサをあげていれば警戒しない！）
+        if (!isFed && distance < targetAnimal.waryDist && !isHiding) {
             animalHides();
         }
     }
@@ -241,53 +278,81 @@
     function doAction(type) {
         if (!gameActive) return;
         if (isHiding) {
-            showMessage("いまは かくれている みたい… そっとしておこう。");
+            showMessage("いまは かくれている みたい…");
             return;
         }
 
         if (type === 'stone') {
-            showMessage("石を 投げた！ どうぶつ は 怒って 逃げ出した！");
+            showMessage("石を 投げた！ どうぶつ は 激怒して 去っていった！");
             angryMode = true;
             animalHides();
-            // 少し間をおいてゲームオーバー画面へ
             setTimeout(() => endGame(false), 1500);
+            
+        } else if (type === 'food') {
+            // エサやり機能
+            if (!isUnlocked) return; // 本来ありえないが念のため
+            
+            showMessage(`${targetAnimal.foodName} を 置いてみた…`);
+            
+            // 少し遅れて反応
+            setTimeout(() => {
+                distance = 2; // 目の前へ！
+                isFed = true; // 仲良しモード
+                updateDisplay();
+                showMessage(`「くんくん…！」<br>${targetAnimal.name} が うれしそうに 近寄ってきた！`);
+                // エサボタンを消す
+                document.getElementById('btn-food').style.display = 'none';
+            }, 1000);
+
         } else if (type === 'hand') {
             if (distance > 5) {
-                showMessage("とおくて とどかない よ。もっと 近づかないと。");
+                showMessage("とおくて とどかない よ。");
+            } else if (isUnlocked && !isFed) {
+                // クリア済みでも、エサをあげてないと少し警戒する演出
+                showMessage("まだ 少し 警戒しているみたい。<br>好物 を あげてみよう！");
             } else {
-                showMessage("そっと ふれた。あったかい！ 少し安心したみたい。");
-                trust += 10;
-                // なでると少し警戒心が解ける演出（任意）
-                // targetAnimal.waryDist -= 1; 
+                // なでる成功！
+                showMessage("よしよし！<br>とっても うれしそう！");
+                showHeart();
             }
+            
         } else if (type === 'branch') {
              showMessage("えだ で つついてみた。");
-             showMessage("ビクッとして、少し離れてしまった。");
-             distance += 10;
-             updateDisplay();
+             if(isFed) {
+                 showMessage("じゃれついて 遊んでいる！");
+             } else {
+                 showMessage("ビクッとして 離れてしまった。");
+                 distance += 15;
+                 updateDisplay();
+             }
         }
+    }
+    
+    // ハートのエフェクト
+    function showHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-anim');
+        heart.innerText = '💖';
+        document.getElementById('animal').appendChild(heart);
+        setTimeout(() => heart.remove(), 1000);
     }
 
     function animalHides() {
         isHiding = true;
         drawScene();
-        if(!angryMode) {
-            showMessage(`警戒して ${targetAnimal.hidingPlace} に かくれて しまった！ はなれて まとう。`);
-        }
+        if(!angryMode) showMessage(`警戒して かくれて しまった！`);
     }
 
     function updateDisplay() {
         document.getElementById('dist-display').innerText = `きょり: ${distance}m`;
-        // 距離によるスケーリング調整
         let scale = 1 + (100 - distance) / 60; 
-        if (distance < 10) scale = 1 + (100 - distance) / 40; // 近くではより大きく
+        if (distance < 5) scale = 3.5; // 至近距離は大きく
         document.getElementById('animal').style.transform = `scale(${scale})`;
     }
 
     function drawScene() {
         const animalEl = document.getElementById('animal');
         const hideEl = document.getElementById('hiding-spot');
-        
         if (isHiding) {
             animalEl.classList.add('hidden');
             hideEl.style.display = 'block';
@@ -304,7 +369,11 @@
     function gameClear() {
         gameActive = false;
         clearInterval(timerInterval);
-        localStorage.setItem('unlocked_' + targetAnimal.id, 'true');
+        
+        // 初回クリアならフラグ保存
+        if (!localStorage.getItem('unlocked_' + targetAnimal.id)) {
+            localStorage.setItem('unlocked_' + targetAnimal.id, 'true');
+        }
         
         const resultScreen = document.getElementById('result-screen');
         resultScreen.classList.remove('hidden-screen');
@@ -312,8 +381,13 @@
         let html = `<p>3かかん いっしょに すごせたね！</p>`;
         html += `<h2>${targetAnimal.name}</h2>`;
         html += `<div style="font-size:6rem; margin:10px;">${targetAnimal.emoji}</div>`;
-        html += `<p style="font-size:0.9rem; text-align:left; display:inline-block;">${targetAnimal.desc}</p>`;
-        html += `<p style="color:orange; font-weight:bold; margin-top:20px;">★ だいこうぶつ を GET！</p>`;
+        html += `<p>${targetAnimal.desc}</p>`;
+        
+        // 今回初めてクリアした時だけ表示
+        if (!isUnlocked) {
+             html += `<p style="color:orange; font-weight:bold; margin-top:10px;">★ ${targetAnimal.foodName} を GET！</p>`;
+             html += `<p style="font-size:0.8rem;">また遊ぶと エサやり ができるよ！</p>`;
+        }
         
         document.getElementById('result-content').innerHTML = html;
     }
@@ -321,18 +395,22 @@
     function endGame(success) {
         gameActive = false;
         clearInterval(timerInterval);
-        if (!success) {
-            document.getElementById('gameover-screen').classList.remove('hidden-screen');
-        }
+        if (!success) document.getElementById('gameover-screen').classList.remove('hidden-screen');
     }
     
     function checkEncyclopedia() {
-        let msg = "【ずかん】\n\n";
-        msg += localStorage.getItem('unlocked_manuru') ? "✅ マヌルネコ (解放済み)\n" : "🔒 ???? (草原)\n";
-        msg += localStorage.getItem('unlocked_okapi') ? "✅ オカピ (解放済み)\n" : "🔒 ???? (ジャングル)\n";
-        alert(msg);
+        // 図鑑機能でもWWFリンクを表示するか確認
+        if(confirm("【ずかん】\n\nあつめた どうぶつ を\nWWFのサイトで しらべる？")) {
+            openWWF();
+        }
+    }
+
+    // WWFへのリンク（新しいタブで開く）
+    function openWWF() {
+        window.open('https://www.wwf.or.jp/activities/basicinfo/5777.html', '_blank');
     }
 </script>
 </body>
 </html>
+
 
